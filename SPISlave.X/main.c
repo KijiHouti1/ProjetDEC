@@ -55,13 +55,13 @@ void main(void)
     printf("intialisation complete\n\r");
     total = 0;
     TMR1_StartTimer();
-   // while(BBB_INIT==false){
+    // while(BBB_INIT==false){
         //wait for lock with BBB 
         //wait for RPIA to lock ///
         //wait for RPIB to lock ///LES JOUEURS RECOIVENT UNE NOTIFICATION QU'ILS SONT CONNECTER
         //wait for RPIC to lock ///IL FAUT CLIQUER SUR LE CONTROLEUR PIC DU BEAGLEBONE POUR CONFIRMER LE NOMBRE DE JOUEUR
         //wait for RPID to lock ///
-   // }
+    // }
     while(1){
     //routine_talk(BBB);
     routine_talk(RPIA);
@@ -109,17 +109,20 @@ void send_control(){
 
 void BBB_broadcast(){
     int TrueLenght;
-    IO_RB1_SetLow();    //BBB 
-    IO_RB2_SetLow();    //RPI1
-    IO_RB3_SetLow();    //RPI2
-    IO_RB4_SetLow();    //RPI3
-    IO_RB5_SetLow();    //RPI4
-
-    IO_RB2_SetHigh();    //RPI1
-    IO_RB3_SetHigh();    //RPI2
-    IO_RB4_SetHigh();    //RPI3
-    IO_RB5_SetHigh();    //RPI4
     TrueLenght=readData[3]+4;
+    identify(RPIA);
+    for(i=0;i<TrueLenght;i++){
+        readDummy = SPI_Exchange8bit(readData[i]);
+    }
+    identify(RPIB);
+    for(i=0;i<TrueLenght;i++){
+        readDummy = SPI_Exchange8bit(readData[i]);
+    }
+    identify(RPIC);
+    for(i=0;i<TrueLenght;i++){
+        readDummy = SPI_Exchange8bit(readData[i]);
+    }
+    identify(RPID);
     for(i=0;i<TrueLenght;i++){
         readDummy = SPI_Exchange8bit(readData[i]);
     }
@@ -157,8 +160,7 @@ void routine_talk(int adress){
         lock=key_locking(0x60,0x06);
         if(lock==true){
             type=receiving();
-            /*if(type == 0xEE){   //RPI_MSG
-                printf("here");
+            if(type == 0xEE){   //RPI_MSG
                 lock=key_locking(0x6F,0xA6);
                 transmit(readData[1]);
             } else if(type == 0xDD){  //RPI_END TURN
@@ -168,7 +170,7 @@ void routine_talk(int adress){
             } else if(type == 0xBB){  //BBB_SINGLE
                 BBB_turn_player(readData[1]);
                 BBB_broadcast();
-            }*/
+            }
         }
     }
 
