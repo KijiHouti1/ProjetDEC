@@ -18,6 +18,20 @@ def cursor_pos(PlusouMoins, max_option):
         curr_pos = max_option
     return curr_pos
 
+def opt_menuA(text, opt, size, pos_x, pos_y, dist_sq):
+    txt_size=msg.write(set_dict, pos_x*scale_w, pos_y*scale_h, text, color.WHITE,size)
+    sqx= (pos_x-dist_sq)*scale_w        #point x du rect
+    sqy= (pos_y-dist_sq)*scale_h        #point y du rect
+    obt_width= (txt_size[0]+(dist_sq*2))*scale_w    #longueur du rect
+    obt_height= (txt_size[1]+(dist_sq*2))*scale_h                           #hauteur du rect
+    if(curr_pos==opt):      # numero d'option 
+        if(press_dwn == 1):
+            pygame.draw.rect(screen, color.RED2, (sqx,sqy,obt_width,obt_height))            
+        else:
+            pygame.draw.rect(screen, color.GRAY, (sqx,sqy,obt_width,obt_height))
+    else:
+        pygame.draw.rect(screen, color.WHITE, (sqx,sqy,obt_width,obt_height), 4)
+    txt_size=msg.write(set_dict, pos_x*scale_w, pos_y*scale_h, text, color.WHITE,size)
 
 
 
@@ -36,8 +50,9 @@ global curr_pos
 curr_pos = 0
 press_dwn = 0
 action = 0
+sauvegarde = 0
 counter_action =0 
-menu = 0
+menu = 0x00
 #Window parameter
 pygame.display.set_caption("BBB_Python")
 clock=pygame.time.Clock()
@@ -78,23 +93,39 @@ while done==False:
             
 
     #______________ALL GAME LOGIC SHOULD GO BELOW THIS COMMENT___________
-    if menu == 0:
+    if menu == 0x00:   # Menu principal
+        if curr_pos  == 0:      #Choix jeu
+            if(action==1):
+                menu = 0xA0
+                action = 0
+        elif curr_pos ==1:      #Choix option
+            if(action==1):
+                menu = 0xB0
+                action = 0
+        elif curr_pos ==2:      #choix Parametre avance
+            if(action==1):
+                menu = 0xC0
+                action = 0
+        elif curr_pos ==3:      #choix quitter
+            if(action==1):
+                menu = 0xD0
+                action = 0
+
+    if menu == 0xA0:
         if curr_pos  == 0:
             if(action==1):
-                menu = 1
+                menu = 0xA1
                 action = 0
         elif curr_pos ==1:
             if(action==1):
-                menu = 2
+                menu = 0xA2
                 action = 0
-        elif curr_pos ==2:
+
+    if menu == 0xA1:
+    	if curr_pos  == 0:
             if(action==1):
-                menu = 3
-                action = 0
-        elif curr_pos ==3:
-            if(action==1):
-                menu = 4
-                action = 0
+                #SEND ACTIVATE GAME
+
     if counter_action == 1:
         menu=0
         counter_action = 0
@@ -108,67 +139,38 @@ while done==False:
 
     #______________ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT_________
     screen.fill(color.BLACK)
-    print scale_w, scale_h
-    print width, height
-    if menu == 0:
-        txt_size=msg.write(set_dict, 450*scale_w, 200*scale_h, "Jeu", color.WHITE,110)
-        if(curr_pos==0):
-            if(press_dwn == 1):
-                pygame.draw.rect(screen, color.RED2, (430*scale_w,180*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))            
-            else:
-                pygame.draw.rect(screen, color.GRAY, (430*scale_w,180*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-        else:
-            pygame.draw.rect(screen, color.WHITE, (430*scale_w,180*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h), 4)
-        txt_size=msg.write(set_dict, 450*scale_w, 200*scale_h, "Jeu", color.WHITE,110)
-
+    if menu == 0x00:
+        opt_menuA("Jeu", 0, 110, 450, 200, 20)
+        opt_menuA("Options", 1, 110, 450, 400, 20)
+        opt_menuA("Parametres avances", 2, 110, 450, 600, 20)
+        opt_menuA("Quitter", 3, 110, 450, 800, 20)
         
-        txt_size=msg.write(set_dict, 450*scale_w, 400*scale_h, "Options", color.WHITE,110)
-        if(curr_pos==1):
-            if(press_dwn == 1):
-                pygame.draw.rect(screen, color.RED2, (430*scale_w,380*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-            else: 
-                pygame.draw.rect(screen, color.GRAY, (430*scale_w,380*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-        else:
-            pygame.draw.rect(screen, color.WHITE, (430*scale_w,380*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h), 4)
-        txt_size=msg.write(set_dict, 450*scale_w, 400*scale_h, "Options", color.WHITE,110)
+    if menu == 0xA0:        #Si on choisi Jeu
+        opt_menuA("Choisir Jeu", 0, 110, 400, 400, 20)
+        opt_menuA("Reprendre Jeu", 1, 110, 400, 800, 20)
 
-        txt_size=msg.write(set_dict, 450*scale_w, 600*scale_h, "Parametres avances", color.WHITE,110)
-        if(curr_pos==2):
-            if(press_dwn == 1):
-                pygame.draw.rect(screen, color.RED2, (430*scale_w,580*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-            else: 
-                pygame.draw.rect(screen, color.GRAY, (430*scale_w,580*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-        else:
-            pygame.draw.rect(screen, color.WHITE, (430*scale_w,580*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h), 4)
-        txt_size=msg.write(set_dict, 450*scale_w, 600*scale_h, "Parametres avances", color.WHITE,110)
+    if menu == 0xA1:        #Si on choisi Jeu
+        opt_menuA("Gwent", 0, 50, 400, 400, 20)
+        opt_menuA("Blackjack", 1, 50, 400, 800, 20)
 
-        txt_size=msg.write(set_dict, 450*scale_w, 800*scale_h, "Quitter", color.WHITE,110)
-        if(curr_pos==3):
-            if(press_dwn == 1):
-                pygame.draw.rect(screen, color.RED2, (430*scale_w,780*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-            else: 
-                pygame.draw.rect(screen, color.GRAY, (430*scale_w,780*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h))
-        else:
-            pygame.draw.rect(screen, color.WHITE, (430*scale_w,780*scale_h,txt_size[0]+40*scale_w,txt_size[1]+40*scale_h), 4)
-        txt_size=msg.write(set_dict, 450, 800*scale_h, "Quitter", color.WHITE,110)
+    if menu == 0xA2:        #Si on choisi Jeu
+        if sauvegarde==0:
+            opt_menuA("Aucune sauvegarde", 0, 50, 400, 400, 20)
+        if sauvegarde==1:
+            opt_menuA("Reprendre jeu", 1, 50, 400, 400, 20)
 
-    if menu ==1:
-        txt_size=msg.write(set_dict, 300*scale_w, 333*scale_h, "GAB", color.WHITE,110)
-        txt_size=msg.write(set_dict, 300*scale_w, (333*scale_h)+txt_size[1], "   0-1  ", color.WHITE,110)
-        txt_size=msg.write(set_dict, 300*scale_w, (666*scale_h)+txt_size[1], "   0-1  ", color.WHITE,110)
-        txt_size=msg.write(set_dict, 300*scale_w, 666*scale_h, "PHIL", color.WHITE,110)
-        txt_size=msg.write(set_dict, 700*scale_w, 500*scale_h, "VS", color.WHITE,110)
-        txt_size=msg.write(set_dict, 875*scale_w, 333*scale_h, "Francis", color.WHITE,110)
-        txt_size=msg.write(set_dict, 875*scale_w, (333*scale_h)+txt_size[1], "   0-1  ", color.WHITE,110)
-        txt_size=msg.write(set_dict, 875*scale_w, 666*scale_h, "LAURENT", color.WHITE,110)
-        txt_size=msg.write(set_dict, 875*scale_w, (666*scale_h)+txt_size[1], "   0-1  ", color.WHITE,110)
+    if menu == 0xB0:        #Si on choisi Options
+        opt_menuA("Son", 0, 50, 250, 500, 20)
+        opt_menuA("Mute", 1, 50, 650, 500, 20)
+        opt_menuA("Manette", 2, 50, 1050, 500, 20)
 
+    if menu == 0xC0:        #Parametre avance
+        opt_menuA("Fermer les manettes",  0, 50, 450, 200, 20)
+        opt_menuA("Console",              1, 50, 450, 400, 20)
+        opt_menuA("Supprimer profil",     2, 50, 450, 600, 20)
+        opt_menuA("Supprimer Sauvegarde", 3, 50, 450, 800, 20)
 
-    if menu ==2:
-        txt_size=msg.write(set_dict, 200, 500*scale_h, "GROSSES OPTIONS SALES", color.WHITE,150)
-    if menu ==3:
-        txt_size=msg.write(set_dict, 200, 500*scale_h, "PARAMETRE", color.WHITE,100)
-    if menu ==4:
+    if menu == 0xD0:        #Quitter
         done=True
         
     pygame.display.flip()
