@@ -17788,7 +17788,7 @@ printf("intialisation complete\n\r");
 total = 0;
 TMR1_StartTimer();
 
-# 65
+# 66
 while(1){
 
 routine_talk(0xA1);
@@ -17815,9 +17815,8 @@ readData[i]=SPI_Exchange8bit(0x55);
 for(i=0;i<readData[3];i++){
 readData[i+4]=SPI_Exchange8bit(0x55);
 }
-for(i=0;i<readData[3];i++){
-printf("%c",readData[i+4]);
-}
+
+# 97
 return (readData[2]);
 }
 
@@ -17836,17 +17835,20 @@ void send_control(){
 
 void BBB_broadcast(){
 int TrueLenght;
-do { LATBbits.LATB1 = 0; } while(0);
-do { LATBbits.LATB2 = 0; } while(0);
-do { LATBbits.LATB3 = 0; } while(0);
-do { LATBbits.LATB4 = 0; } while(0);
-do { LATBbits.LATB5 = 0; } while(0);
-
-do { LATBbits.LATB2 = 1; } while(0);
-do { LATBbits.LATB3 = 1; } while(0);
-do { LATBbits.LATB4 = 1; } while(0);
-do { LATBbits.LATB5 = 1; } while(0);
 TrueLenght=readData[3]+4;
+identify(0xA1);
+for(i=0;i<TrueLenght;i++){
+readDummy = SPI_Exchange8bit(readData[i]);
+}
+identify(0xA2);
+for(i=0;i<TrueLenght;i++){
+readDummy = SPI_Exchange8bit(readData[i]);
+}
+identify(0xA3);
+for(i=0;i<TrueLenght;i++){
+readDummy = SPI_Exchange8bit(readData[i]);
+}
+identify(0xA4);
 for(i=0;i<TrueLenght;i++){
 readDummy = SPI_Exchange8bit(readData[i]);
 }
@@ -17858,16 +17860,17 @@ transmit(dest);
 }
 
 void identify(int adress){
-do { LATBbits.LATB1 = 0; } while(0);
-do { LATBbits.LATB2 = 0; } while(0);
-do { LATBbits.LATB3 = 0; } while(0);
-do { LATBbits.LATB4 = 0; } while(0);
-do { LATBbits.LATB5 = 0; } while(0);
-if (adress==0xA6) do { LATBbits.LATB1 = 1; } while(0);
-if (adress==0xA1)do { LATBbits.LATB2 = 1; } while(0);
-if (adress==0xA2)do { LATBbits.LATB3 = 1; } while(0);
-if (adress==0xA3)do { LATBbits.LATB4 = 1; } while(0);
-if (adress==0xA4)do { LATBbits.LATB5 = 1; } while(0);
+do { LATBbits.LATB1 = 1; } while(0);
+do { LATBbits.LATB2 = 1; } while(0);
+do { LATBbits.LATB3 = 1; } while(0);
+do { LATBbits.LATB4 = 1; } while(0);
+do { LATBbits.LATB5 = 1; } while(0);
+_delay((unsigned long)((10)*(20000000/4000.0)));
+if (adress==0xA6) do { LATBbits.LATB1 = 0; } while(0);
+if (adress==0xA1)do { LATBbits.LATB2 = 0; } while(0);
+if (adress==0xA2)do { LATBbits.LATB3 = 0; } while(0);
+if (adress==0xA3)do { LATBbits.LATB4 = 0; } while(0);
+if (adress==0xA4)do { LATBbits.LATB5 = 0; } while(0);
 }
 
 void routine_talk(int adress){
@@ -17883,9 +17886,20 @@ time_up=1;
 }
 lock=key_locking(0x60,0x06);
 if(lock==1){
+lock=0;
 type=receiving();
+if(type == 0xEE){
+while(lock==0) lock=key_locking(0x6F,0xA6);
+transmit(readData[1]);
 
-# 172
+} else if(type == 0xDD){
+transmit(0xA6);
+} else if(type == 0xCC){
+BBB_broadcast();
+} else if(type == 0xBB){
+BBB_turn_player(readData[1]);
+BBB_broadcast();
+}
 }
 }
 

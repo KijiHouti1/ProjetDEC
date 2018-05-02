@@ -14,13 +14,13 @@
 #include "mcc_generated_files/mcc.h"
 #include <stdio.h>
 
-#define RPIA 0xA1
-#define RPIB 0xA2
-#define RPIC 0xA3
-#define RPID 0xA4
-#define BBB  0xA6
+#define RPIA 0xA1       //B2
+#define RPIB 0xA2       //B3 
+#define RPIC 0xA3       //B4
+#define RPID 0xA4       //B5
+#define BBB  0xA6       //B1
 
-
+//--------------------Function Declaration---------------------//
 
 bool key_locking(int master, int slave);
 int  receiving();
@@ -31,7 +31,7 @@ void routine_talk(int adress);
 void send_control();
 void BBB_turn_player(int dest);
 
-
+//------------------END SEGMENT--------------------------------//
 
 uint16_t    message[];
 uint16_t    MY_BUFFER_SIZE = 256;
@@ -55,6 +55,7 @@ void main(void)
     printf("intialisation complete\n\r");
     total = 0;
     TMR1_StartTimer();
+    //-----------------TODO-----------------------------//
     // while(BBB_INIT==false){
         //wait for lock with BBB 
         //wait for RPIA to lock ///
@@ -88,9 +89,11 @@ int receiving(){
     for(i=0;i<readData[3];i++){
         readData[i+4]=SPI_Exchange8bit(0x55);
     }
+    /*
     for(i=0;i<readData[3];i++){
         printf("%c",readData[i+4]); 
     }
+    */
     return (readData[2]);
 }
     
@@ -134,16 +137,17 @@ void BBB_turn_player(int dest){
 }
 
 void identify(int adress){
-    IO_RB1_SetLow();    //BBB 
-    IO_RB2_SetLow();    //RPI1
-    IO_RB3_SetLow();    //RPI2
-    IO_RB4_SetLow();    //RPI3
-    IO_RB5_SetLow();    //RPI4
-    if (adress==BBB) IO_RB1_SetHigh();    //BBB 
-    if (adress==RPIA)IO_RB2_SetHigh();    //RPIA 
-    if (adress==RPIB)IO_RB3_SetHigh();    //RPIB
-    if (adress==RPIC)IO_RB4_SetHigh();    //RPIC
-    if (adress==RPID)IO_RB5_SetHigh();    //RPID
+    IO_RB1_SetHigh();    //BBB 
+    IO_RB2_SetHigh();    //RPI1
+    IO_RB3_SetHigh();    //RPI2
+    IO_RB4_SetHigh();    //RPI3
+    IO_RB5_SetHigh();    //RPI4
+    __delay_ms(10);
+    if (adress==BBB) IO_RB1_SetLow();    //BBB 
+    if (adress==RPIA)IO_RB2_SetLow();    //RPIA 
+    if (adress==RPIB)IO_RB3_SetLow();    //RPIB
+    if (adress==RPIC)IO_RB4_SetLow();    //RPIC
+    if (adress==RPID)IO_RB5_SetLow();    //RPID
 }
 
 void routine_talk(int adress){
@@ -154,17 +158,19 @@ void routine_talk(int adress){
     identify(adress);
     while(time_up==false){        
         int ReadTimer=TMR1_ReadTimer();
-        if(ReadTimer>=11500){
-            time_up=true; 
+        if(ReadTimer>=11500){       //A revoir permet de calculer 20 ms avant de changer de RPI ou BBB
+            time_up=true;           //FLAG up
         }
-        lock=key_locking(0x60,0x06);
-        if(lock==true){
-            type=receiving();
-            if(type == 0xEE){   //RPI_MSG
-                lock=key_locking(0x6F,0xA6);
-                transmit(readData[1]);
-            } else if(type == 0xDD){  //RPI_END TURN
-                transmit(BBB);
+        lock=key_locking(0x60,0x06);        //Verifier si quelqu'un veut parler et PIC veut ecouter
+        if(lock==true){                     //Etat handshake complete
+            lock=false;
+            type=receiving();               //receiving recoit la trame, traite le type ensuite
+            if(type == 0xEE){               //RPI_MSG
+                while(lock==false) lock=key_locking(0x6F,0xA6);    //Attend un 6F, Envoie un A6 --> PIC veut communiquer
+                transmit(readData[1]);          //Transmission vers un destinateur particulier
+            //**********************PAS TESTER********************//
+            } else if(type == 0xDD){  //RPI_END TURN        
+                transmit(BBB);                  
             } else if(type == 0xCC){  //BBB broadcast
                 BBB_broadcast();
             } else if(type == 0xBB){  //BBB_SINGLE
