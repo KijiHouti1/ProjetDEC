@@ -37,17 +37,48 @@ def key_locking(master):
 
 #-------------------Programme principal------------------------------------#
 init()  #initialisation des IO et du bus spi
-
-while(message==True):
-
-    if(GPIO.input(22) == True):
-        msg_status, pic_key = key_locking([0x60])
-
-        if msg_status == True:        
-            write_msg([[0xA1],[0xA4],[0xee],[0x04],[0x30],[0x31],[0x30],[0x30]])
-            message=False            
+you_got_mail=False
+msg_status=False
+envoie=True
+done=False
+msg_to_send=[[0xA1],[0xA4],[0xee],[0x04],[0x30],[0x31],[0x30],[0x30]]
+Msg=[]
+while done == False:        #on observe si la valeur de fin du programme est toujours a false avant de continuer
+    if(GPIO.input(22) == True):     # Pin d'activation de la comm venant du PIC
+        #spi.open(1,2)              # Activation Pi de son port spi
+        #spi_actif = True           # Flag up
         
-    
+        if (envoi == False) or (envoi == None):         # Si on Envoie aucun message = Byte 6F sent
+            msg_status, pic_is = key_locking([0x6F])    # Reception T or F du handshake, PIC status 
+
+        elif envoi == True:                             #Si on envoie un message = Byte 60 sent
+            msg_status,pic_is = key_locking([0x60])     #Reception du handshake et pic status
+            envoi = False                               #Retour a false du flag apres single transmission
+
+        if msg_status == True:                          #PI et PIC ont etabli une communication
+            if pic_is[0] == 0xa6:                       #PIC veut parler
+                Msg = receive()                         #Capture du message
+                if Msg[2] == 0xEE:                      #Si message est un text
+                    you_got_mail = True                 #Flag up for later purpose
+                    boite_reception.append(Msg)         #List contenant message
+
+                elif Msg[2] == 0xDD:                    #Si message est de l'information
+                    pass    #TODO ajouter le reception de game data
+
+            if pic_is[0] == 0x06:                       #PI veut parler
+                write_msg(msg_to_send)                  #PI send message (Peut etre n'importe quel type de message)
+                del msg_to_send[:]                      #CLEANSING
+            done=True
+        else:
+            pass
+
+    else:
+        pass
+        #if spi_actif == True:
+        #    spi.close(1,2)
+
+if you_got_mail == True:
+    print boite_reception
         
     
     
